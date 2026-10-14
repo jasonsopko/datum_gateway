@@ -271,6 +271,21 @@ static void datum_utils_tests_refstr(void) {
 	datum_refstr_unref(empty);
 }
 
+static void datum_utils_tests_strncpy_printable(void) {
+	char out[8];
+	datum_test(!strncpy_printable(out, NULL, sizeof(out)));
+	datum_test(!strncpy_printable(NULL, "x", sizeof(out)));
+	datum_test(!strncpy_printable(out, "x", 0));
+	datum_test(strncpy_printable(out, "ab\n\x1b[1m", sizeof(out)));
+	datum_test(strcmp(out, "ab??[1m") == 0);
+	datum_test(strncpy_printable(out, "0123456789", sizeof(out)));
+	datum_test(strcmp(out, "0123456") == 0);
+	datum_test(strncpy_printable(out, "\xc3\xa9", sizeof(out)));
+	datum_test(strcmp(out, "??") == 0);
+	datum_test(strncpy_printable(out, "", sizeof(out)));
+	datum_test(out[0] == 0);
+}
+
 void datum_utils_tests(void) {
 	datum_utils_init();
 	datum_utils_tests_hex();
@@ -283,4 +298,5 @@ void datum_utils_tests(void) {
 	datum_utils_tests_thread_stack();
 	datum_utils_tests_executable_path();
 	datum_utils_tests_refstr();
+	datum_utils_tests_strncpy_printable();
 }
