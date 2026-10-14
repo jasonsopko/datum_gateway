@@ -249,6 +249,28 @@ static void datum_utils_tests_executable_path(void) {
 	}
 }
 
+static void datum_utils_tests_refstr(void) {
+	datum_test(!datum_refstr_new(NULL));
+	datum_test(!datum_refstr_ref(NULL));
+	datum_refstr_unref(NULL);
+	
+	T_DATUM_REFSTR * const rs = datum_refstr_new("tester");
+	if (!datum_test(rs)) return;
+	datum_test(strcmp(rs->s, "tester") == 0);
+	datum_test(atomic_load(&rs->refs) == 1);
+	datum_test(datum_refstr_ref(rs) == rs);
+	datum_test(atomic_load(&rs->refs) == 2);
+	datum_refstr_unref(rs);
+	datum_test(atomic_load(&rs->refs) == 1);
+	datum_test(strcmp(rs->s, "tester") == 0);
+	datum_refstr_unref(rs);
+	
+	T_DATUM_REFSTR * const empty = datum_refstr_new("");
+	if (!datum_test(empty)) return;
+	datum_test(empty->s[0] == '\0');
+	datum_refstr_unref(empty);
+}
+
 void datum_utils_tests(void) {
 	datum_utils_init();
 	datum_utils_tests_hex();
@@ -260,4 +282,5 @@ void datum_utils_tests(void) {
 	datum_utils_tests_buf();
 	datum_utils_tests_thread_stack();
 	datum_utils_tests_executable_path();
+	datum_utils_tests_refstr();
 }

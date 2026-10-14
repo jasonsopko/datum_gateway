@@ -836,6 +836,25 @@ char **datum_deepcopy_charpp(const char * const * const p) {
 	return out;
 }
 
+T_DATUM_REFSTR *datum_refstr_new(const char * const s) {
+	if (!s) return NULL;
+	const size_t sz = strlen(s) + 1;
+	T_DATUM_REFSTR * const rs = malloc(sizeof(*rs) + sz);
+	if (!rs) return NULL;
+	atomic_init(&rs->refs, 1);
+	memcpy(rs->s, s, sz);
+	return rs;
+}
+
+T_DATUM_REFSTR *datum_refstr_ref(T_DATUM_REFSTR * const rs) {
+	if (rs) atomic_fetch_add(&rs->refs, 1);
+	return rs;
+}
+
+void datum_refstr_unref(T_DATUM_REFSTR * const rs) {
+	if (rs && atomic_fetch_sub(&rs->refs, 1) == 1) free(rs);
+}
+
 static
 char *datum_get_executable_path(void) {
 #ifdef __linux__
